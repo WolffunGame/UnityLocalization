@@ -137,7 +137,7 @@ namespace UnityEngine.Localization.Tables
         /// Formatting will use SmartFormat is <see cref="IsSmart"/> is true else it will default to String.Format.
         /// </summary>
         /// <param name="formatProvider">Custom format provider used with String.Format and smart strings.
-        /// If formatProvider is <c>null</c>, RemoveFromTable uses the <see cref="LocalizationTable.LocaleIdentifier"/>'s <see cref="Locale.Formatter"/>.</param>
+        /// If formatProvider is <see langword="null"/>, RemoveFromTable uses the <see cref="LocalizationTable.LocaleIdentifier"/>'s <see cref="Locale.Formatter"/>.</param>
         /// <param name="args">Arguments that will be applied to Smart Format or <c>String.Format.</c></param>
         /// <returns></returns>
         public string GetLocalizedString(IFormatProvider formatProvider, IList<object> args) => GetLocalizedString(formatProvider, args, LocalizationSettings.SelectedLocaleAsync.Result as PseudoLocale);
@@ -147,7 +147,7 @@ namespace UnityEngine.Localization.Tables
         /// Formatting will use SmartFormat is <see cref="IsSmart"/> is true else it will default to String.Format.
         /// </summary>
         /// <param name="formatProvider">Custom format provider used with String.Format and smart strings.
-        /// If formatProvider is <c>null</c>, RemoveFromTable uses the <see cref="LocalizationTable.LocaleIdentifier"/>'s <see cref="Locale.Formatter"/>.</param>
+        /// If formatProvider is <see langword="null"/>, RemoveFromTable uses the <see cref="LocalizationTable.LocaleIdentifier"/>'s <see cref="Locale.Formatter"/>.</param>
         /// <param name="args">Arguments that are be applied to Smart Format or <c>String.Format.</c></param>
         /// <param name="pseudoLocale">Optional <see cref="PseudoLocale"/> that will be applied to the final string.</param>
         /// <returns></returns>
@@ -166,7 +166,8 @@ namespace UnityEngine.Localization.Tables
                     var localVariables = m_FormatCache?.LocalVariables;
                     m_FormatCache = null;
                     m_FormatCache = GetOrCreateFormatCache();
-                    m_FormatCache.LocalVariables = localVariables;
+                    if (m_FormatCache != null)
+                        m_FormatCache.LocalVariables = localVariables;
                 }
                 #endif
 

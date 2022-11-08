@@ -89,10 +89,10 @@ namespace UnityEngine.Localization.PropertyVariants.TrackedObjects
 
             public DeferredJsonObjectOperation()
             {
-                callback = OnStringLoaded;
+                callback = OnAssetLoaded;
             }
 
-            void OnStringLoaded(AsyncOperationHandle<Object> asyncOperationHandle)
+            void OnAssetLoaded(AsyncOperationHandle<Object> asyncOperationHandle)
             {
                 jsonValue.Value = asyncOperationHandle.Result != null ? asyncOperationHandle.Result.GetInstanceID() : 0;
 
@@ -186,11 +186,13 @@ namespace UnityEngine.Localization.PropertyVariants.TrackedObjects
                         if (stringOp.IsDone)
                         {
                             jsonProperty.Value = stringOp.Result;
+                            AddressablesInterface.Release(stringOp);
                         }
                         #if !UNITY_WEBGL // WebGL does not support WaitForCompletion
                         else if (localizedStringProperty.LocalizedString.WaitForCompletion)
                         {
                             jsonProperty.Value = stringOp.WaitForCompletion();
+                            AddressablesInterface.Release(stringOp);
                         }
                         #endif
                         else
@@ -217,12 +219,15 @@ namespace UnityEngine.Localization.PropertyVariants.TrackedObjects
                         {
                             var result = assetOp.Result;
                             jsonProperty.Value = result != null ? result.GetInstanceID() : 0;
+                            AddressablesInterface.Release(assetOp);
+                            
                         }
                         #if !UNITY_WEBGL // WebGL does not support WaitForCompletion
                         else if (localizedAssetProperty.LocalizedObject.WaitForCompletion)
                         {
                             var result = assetOp.WaitForCompletion();
                             jsonProperty.Value = result != null ? result.GetInstanceID() : 0;
+                            AddressablesInterface.Release(assetOp);
                         }
                         #endif
                         else
@@ -241,20 +246,18 @@ namespace UnityEngine.Localization.PropertyVariants.TrackedObjects
 
             if (asyncOperations.Count > 0)
             {
-                // We need to acquire the operations or CreateGenericGroupOperation will release them when it is released.
-                foreach (var asyncOperationHandle in asyncOperations)
-                {
-                    AddressablesInterface.Acquire(asyncOperationHandle);
-                }
-
-                var operation = AddressablesInterface.ResourceManager.CreateGenericGroupOperation(asyncOperations, true);
+                var operation = AddressablesInterface.CreateGroupOperation(asyncOperations);
                 operation.Completed += res =>
                 {
                     ApplyArraySizes(arraySizes, jsonObject, variantLocale.Identifier, defaultLocaleIdentifier);
                     ApplyJson(jsonObject);
 
+                    foreach (var op in res.Result)
+                        AddressablesInterface.Release(op);
+
                     ListPool<AsyncOperationHandle>.Release(asyncOperations);
                     ListPool<ArraySizeTrackedProperty>.Release(arraySizes);
+                    AddressablesInterface.Release(res);
                 };
                 return operation;
             }

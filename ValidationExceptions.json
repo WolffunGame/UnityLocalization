@@ -2,8 +2,8 @@
     "ErrorExceptions": [
         {
             "ValidationTest": "API Validation",
-            "ExceptionMessage": "Assembly \"Unity.ResourceManager\" no longer exists or is no longer included in build. This change requires a new major version.",
-            "PackageVersion": "1.3.2"
+            "PackageVersion": "1.4.2",
+            "Reason" : "Failing test can not be exempted due to the exception containing a temporary path name."
         }
     ],
     "WarningExceptions": []

@@ -2,6 +2,48 @@
 
 All notable changes to this package will be documented in this file.
 
+## [1.4.2] - 2022-09-27
+
+### Added
+
+- Added support for tracking a [MeshFilter](https://docs.unity3d.com/ScriptReference/MeshFilter.html) when using **Localized Property Variants**. (LOC-719)
+- Added **Preload Behavior** to **Localization Settings**. This allows further control over which assets to preload, such as loading fallback assets as well as the selected locale. (LOC-762)
+- Added `ITableProvider` and `ITablePostProcessor`. These let you provide tables from custom localizations and to apply changes to a table when it first loads. (LOC-673)
+- Added `LoadAssetAsync<TObject>()` to `LocalizedAssetBase`. This helps to filter sub-assets when trying to load them and they share a common type among other sub-assets with the same name. (LOC-793)
+- Added `LocalizationEditorEvents.ExtensionAddedToCollection` & `LocalizationEditorEvents.ExtensionRemovedFromCollection`, which you can use to react to collection extension additions & removals. Added `CollectionExtension.Destroy()` which you can use to perform cleanup when a collection extension is removed. (LOC-685)
+- Added `LocalizedMesh` class to support localizing mesh assets.
+- Added a step to the **Asset Table Addressables Analyzer** that checks if sub-assets are referenced by name and offers to upgrade them. (LOC-793)
+- Added support for [IConvertible](https://docs.microsoft.com/en-us/dotnet/api/system.iconvertible) to Plural and Conditional Smart String formatters. This uses the `ToDecimal` method when a numeric value is required for evaluating the object. (LOC-778)
+- Added support for `SystemLanguage.Hindi` in Unity 2022.2 and above. (LOC-672)
+- Added support for drawing the enum values in the `GameObjectLocalizer` editor when tracking an enum property. (LOC-684)
+- Added support for referencing sub-assets. Previously we would only address the main asset and extract the sub-asset by matching the type. This was unpredictable when the main asset was the same type or contained multiple sub-assets with the same type. We now address the sub-asset by name so that we can ensure we get it correctly regardless of the type or number of other sub-assets. (LOC-793)
+- Added the 'NoTranslationFound' event to allow users to register to the callback whenever an entry doesn't have a translation. (LOC-688)
+
+### Changed
+
+- An exception is now thrown when attempting to add a built-in resource to an Asset Table when using `AssetTableCollection.AddAssetToTable`. Addressables doesn't currently support built-in resources. Create a local copy if you need to use a built-in resource.
+- Updated Google Sheets API to 1.57.0.2720 and Newtonsoft.Json API to 13.0.1. (LOC-250)
+- Updated to Addressables 1.20.5.
+- When possible, the **CSV Extension** now stores the file path as relative to the project when using the **Save...** and **Open...** commands.
+
+### Deprecated
+
+- Deprecated API `LocalizedString.CurrentLoadingOperation` and `LocalizedAsset.CurrentLoadingOperation` now produce errors when used.
+
+### Fixed
+
+- Fixed **Google Sheets** `CreateMappingsFromColumnNames` not using `Locale.LocaleName` when considering possible Locale names.
+- Fixed `InvalidOperationException: Stack empty` when using **GoogleSheets** extension on Linux. ([LOC-698](https://issuetracker.unity3d.com/product/unity/issues/guid/LOC-698))
+- Fixed `ListFormatter` missing the spacer when extracting literal characters from a Smart String.
+- Fixed `NullReferenceException` during Edit mode when calling `GetLocalizedString` on a smart but empty StringTableEntry. (LOC-754)
+- Fixed errors when exiting playmode with **Enter playmode** support enabled and **use built addressables playmode**. ([LOC-722](https://issuetracker.unity3d.com/product/unity/issues/guid/LOC-722))
+- Fixed file path not being saved when using **CSV Extension** **Save...** and **Open...** commands. ([LOC-751](https://issuetracker.unity3d.com/product/unity/issues/guid/LOC-751))
+- Fixed freeze when an invalid Smart String was called with `WaitForCompletion` and throw exception was enabled in the settings. (LOC-768)
+- Fixed LocalizedString preview not working when the instance was nested inside of a serialized class. ([LOC-812](https://issuetracker.unity3d.com/product/unity/issues/guid/LOC-812))
+- Fixed newly created collections having `preload` enabled by default.
+- Improved Addressables operations management. Fixed several issues that would cause an addressable operation to be leaked and the asset not released. ([LOC-794](https://issuetracker.unity3d.com/product/unity/issues/guid/LOC-794))
+- Improved the **Missing Tables** list in the **Table Collection Editor** so it doesn't return false positives, which causes the "Create" button to become disabled. ([LOC-800](https://issuetracker.unity3d.com/product/unity/issues/guid/LOC-800))
+
 ## [1.3.2] - 2022-06-01
 
 ### Changed

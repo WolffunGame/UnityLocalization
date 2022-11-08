@@ -116,11 +116,16 @@ namespace UnityEditor.Localization.Plugins.CSV
                 var collection = target.TargetCollection as StringTableCollection;
 
                 var path = EditorUtility.SaveFilePanel("Export to CSV", MenuItems.PreviousDirectory, collection.TableCollectionName, "csv");
+                path = PathHelper.MakePathRelative(path);
                 if (!string.IsNullOrEmpty(path))
                 {
                     data.m_ConnectedFile.stringValue = path;
                     Export(path, collection, target.Columns);
+                    MenuItems.PreviousDirectory = path;
                 }
+
+                // We need to apply the changes here as we exit early (LOC-751).
+                data.m_ConnectedFile.serializedObject.ApplyModifiedProperties();
                 GUIUtility.ExitGUI();
             }
 
@@ -130,11 +135,17 @@ namespace UnityEditor.Localization.Plugins.CSV
                 var collection = target.TargetCollection as StringTableCollection;
 
                 var path = EditorUtility.OpenFilePanel("Import CSV", MenuItems.PreviousDirectory, "csv");
+                path = PathHelper.MakePathRelative(path);
                 if (!string.IsNullOrEmpty(path))
                 {
                     data.m_ConnectedFile.stringValue = path;
                     Import(path, collection, target.Columns);
+                    MenuItems.PreviousDirectory = path;
                 }
+
+                // We need to apply the changes here as we exit early (LOC-751).
+                data.m_ConnectedFile.serializedObject.ApplyModifiedProperties();
+
                 GUIUtility.ExitGUI();
             }
 
