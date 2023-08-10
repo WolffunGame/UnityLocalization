@@ -47,6 +47,8 @@ namespace UnityEditor.Localization.Plugins.Google
             public static readonly GUIContent pull = EditorGUIUtility.TrTextContent("Pull");
             public static readonly GUIContent pushSelected = EditorGUIUtility.TrTextContent("Push Selected");
             public static readonly GUIContent pullSelected = EditorGUIUtility.TrTextContent("Pull Selected");
+            public static readonly GUIContent syncTable = EditorGUIUtility.TrTextContent("Sync Table");
+            public static readonly GUIContent syncSelected = EditorGUIUtility.TrTextContent("Sync Selected");
             public static readonly GUIContent selectSheet = EditorGUIUtility.TrTextContent("Select Sheet");
             public static readonly GUIContent sheetId = EditorGUIUtility.TrTextContent("Sheet Id", "The Sheet Id from your Google Spreadsheet. In the Spreadsheet’s Google URL, this is at the end of the URL: https://docs.google.com/spreadsheets/d/SpreadhsheetId/edit#gid=sheetId");
             public static readonly GUIContent spreadSheetId = EditorGUIUtility.TrTextContent("Spreadsheet Id", "The Spreadsheet Id from your Google Spreadsheet. In the Spreadsheet’s Google URL, this is in the middle of the URL: https://docs.google.com/spreadsheets/d/SpreadhsheetId/edit#gid=sheetId");
@@ -307,6 +309,7 @@ namespace UnityEditor.Localization.Plugins.Google
             {
                 using (new EditorGUI.DisabledGroupScope(data.columnsList.index < 0))
                 {
+                    GUI.enabled = false;
                     if (GUI.Button(splitRow.left, Styles.pushSelected))
                     {
                         var google = GetGoogleSheets(data);
@@ -319,6 +322,7 @@ namespace UnityEditor.Localization.Plugins.Google
                         // Exit GUI to prevent erros due to GUI state changes. (LOC-698)
                         GUIUtility.ExitGUI();
                     }
+                    GUI.enabled = true;
                     if (GUI.Button(splitRow.right, Styles.pullSelected))
                     {
                         var google = GetGoogleSheets(data);
@@ -333,6 +337,8 @@ namespace UnityEditor.Localization.Plugins.Google
 
                 splitRow = position.SplitHorizontal();
                 position.MoveToNextLine();
+                
+                GUI.enabled = false;
                 if (GUI.Button(splitRow.left, Styles.push))
                 {
                     var google = GetGoogleSheets(data);
@@ -344,6 +350,7 @@ namespace UnityEditor.Localization.Plugins.Google
                     // Exit GUI to prevent erros due to GUI state changes. (LOC-698)
                     GUIUtility.ExitGUI();
                 }
+                GUI.enabled = true;
                 if (GUI.Button(splitRow.right, Styles.pull))
                 {
                     var google = GetGoogleSheets(data);
@@ -352,6 +359,38 @@ namespace UnityEditor.Localization.Plugins.Google
 
                     // Exit GUI to prevent erros due to GUI state changes. (LOC-698)
                     GUIUtility.ExitGUI();
+                }
+
+                //add more layout to draw the sync table button
+                splitRow = position.SplitHorizontal();
+                position.MoveToNextLine();
+
+                if(GUI.Button(splitRow.left, Styles.syncTable))
+                {
+                    var google = GetGoogleSheets(data);
+                    var target = property.GetActualObjectForSerializedProperty<GoogleSheetsExtension>(fieldInfo);
+                    google.PullIntoStringTableCollection(data.m_SheetId.intValue, target.TargetCollection as StringTableCollection, target.Columns, data.m_RemoveMissingPulledKeys.boolValue, TaskReporter.CreateDefaultReporter(), true);
+
+                    var collection = target.TargetCollection as StringTableCollection;
+                    data.pushTask = google.PushStringTableCollectionAsync(data.m_SheetId.intValue, collection, target.Columns, TaskReporter.CreateDefaultReporter());
+                    s_PushRequests.Add((collection, data.pushTask));
+
+                    // Exit GUI to prevent erros due to GUI state changes. (LOC-698)
+                    GUIUtility.ExitGUI();
+                }
+                
+                if (GUI.Button(splitRow.right, Styles.syncSelected))
+                {
+                    //pull then push
+                    var google = GetGoogleSheets(data);
+                    var target = property.GetActualObjectForSerializedProperty<GoogleSheetsExtension>(fieldInfo);
+                    var selectedCollection = GetSelectedColumns(data.columnsList.index, property);
+                    google.PullIntoStringTableCollection(data.m_SheetId.intValue, target.TargetCollection as StringTableCollection, selectedCollection, data.m_RemoveMissingPulledKeys.boolValue, TaskReporter.CreateDefaultReporter(), true);
+
+                    var collection = target.TargetCollection as StringTableCollection;
+                    data.pushTask = google.PushStringTableCollectionAsync(data.m_SheetId.intValue, collection, selectedCollection, TaskReporter.CreateDefaultReporter());
+                    s_PushRequests.Add((collection, data.pushTask));
+
                 }
             }
         }
@@ -387,7 +426,7 @@ namespace UnityEditor.Localization.Plugins.Google
         public override float GetPropertyHeight(GoogleSheetsExtensionPropertyDrawerData data, SerializedProperty property, GUIContent label)
         {
             float height = EditorGUIUtility.standardVerticalSpacing; // top padding
-            height += (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * 10;
+            height += (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * 12;
             height += data.columnsList.GetHeight() + EditorGUIUtility.standardVerticalSpacing;
             return height;
         }
